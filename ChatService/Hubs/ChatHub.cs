@@ -3,6 +3,7 @@ using ChatService.Models;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatService.Hubs;
 
@@ -15,23 +16,42 @@ public class ChatHub : Hub
         _dbContext = dbContext;
     }
 
-    public async Task SendMessage(string user, string message)
+    public async Task SendMessage(string message, int userId)
     {
-        // Create and persist the new message.
-        // For this minimal demo, we'll assume a default user with ID 1.
-        // In a full app, you'd look up the user by name or use authentication.
-        var msg = new Message
+        try
         {
-            Content = message,
-            Timestamp = DateTime.UtcNow,
-            UserId = 1
-        };
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new HubException("User not found");
+            }
 
-        _dbContext.Messages.Add(msg);
-        await _dbContext.SaveChangesAsync();
+            var msg = new Message
+            {
+                Content = message,
+                Timestamp = DateTime.UtcNow,
+                UserId = userId
+            };
 
-        // Broadcast the message to all connected clients.
-        await Clients.All.SendAsync("ReceiveMessage", user, message);
+            _dbContext.Messages.Add(msg);
+            await _dbContext.SaveChangesAsync();
+
+            await Clients.All.SendAsync("ReceiveMessage", user.Username, message);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending message: {ex.Message}");
+            throw;
+        }
     }
-    
+
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        await base.OnDisconnectedAsync(exception);
+    }
 }

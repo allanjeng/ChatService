@@ -30,6 +30,8 @@ ScaffoldingReadMe.txt
 
 # Dotnet runtime files
 *.db
+*.db-wal
+*.db-shm
 *.pidb
 
 # OS generated files
@@ -39,3 +41,14 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Visual Studio
+.vs/
+
+# Development settings
+appsettings.Development.json
+
+# Local development database
+chat.db
+chat.db-wal
+chat.db-shm

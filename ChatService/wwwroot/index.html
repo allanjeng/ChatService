@@ -3,58 +3,170 @@
 <head>
     <meta charset="utf-8" />
     <title>Chat Service Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #loginForm {
+            margin-bottom: 20px;
+        }
+        #chatForm {
+            display: none;
+        }
+        #messagesList {
+            list-style-type: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        #messagesList li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        #messagesList li:last-child {
+            border-bottom: none;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 70%;
+            margin-right: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h1>Chat Service</h1>
-    <ul id="messagesList"></ul>
-    <input type="text" id="messageInput" placeholder="Type a message..." />
-    <button onclick="sendMessage()">Send</button>
+    
+    <div id="loginForm">
+        <h2>Login</h2>
+        <input type="text" id="usernameInput" placeholder="Enter your username" />
+        <button onclick="login()">Login</button>
+    </div>
 
-    <!-- SignalR JavaScript client from CDN -->
+    <div id="chatForm">
+        <h2>Welcome, <span id="currentUsername"></span>!</h2>
+        <ul id="messagesList"></ul>
+        <input type="text" id="messageInput" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
+        let connection;
+        let currentUser = null;
+
         // Build a connection to the SignalR hub
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chathub")
-            .build();
+        function initializeConnection() {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chathub")
+                .build();
 
-        // Function to display a new message in the list
-        function addMessage(user, message) {
-            const li = document.createElement("li");
-            li.textContent = `${user}: ${message}`;
-            document.getElementById("messagesList").appendChild(li);
-        }
+            connection.on("ReceiveMessage", function (username, message) {
+                addMessage(username, message);
+            });
 
-        // Listen for incoming messages from the hub
-        connection.on("ReceiveMessage", function (user, message) {
-            addMessage(user, message);
-        });
-
-        // Start the SignalR connection
-        connection.start().catch(function (err) {
-            return console.error(err.toString());
-        });
-
-        // Send a message via SignalR
-        function sendMessage() {
-            const message = document.getElementById("messageInput").value;
-            // For this demo, we use a hardcoded user name.
-            const user = "User";
-            connection.invoke("SendMessage", user, message).catch(function (err) {
-                return console.error(err.toString());
+            connection.start().catch(function (err) {
+                console.error(err.toString());
             });
         }
 
-        // Fetch and display the last 50 messages on page load
-        fetch('/messages')
-            .then(response => response.json())
-            .then(messages => {
-                messages.forEach(m => {
-                    // If available, you can also show m.User.Username
-                    addMessage("User", m.content);
+        function addMessage(username, message) {
+            const li = document.createElement("li");
+            li.textContent = `${username}: ${message}`;
+            document.getElementById("messagesList").appendChild(li);
+            // Scroll to bottom
+            document.getElementById("messagesList").scrollTop = document.getElementById("messagesList").scrollHeight;
+        }
+
+        async function login() {
+            const username = document.getElementById("usernameInput").value;
+            if (!username) {
+                alert("Please enter a username");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: username
                 });
-            })
-            .catch(err => console.error(err));
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const userData = await response.json();
+                currentUser = userData;
+                
+                document.getElementById("currentUsername").textContent = userData.username;
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("chatForm").style.display = "block";
+                
+                initializeConnection();
+                loadMessages();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Login failed. Please try again.');
+            }
+        }
+
+        async function loadMessages() {
+            try {
+                const response = await fetch('/messages');
+                const messages = await response.json();
+                messages.forEach(m => {
+                    addMessage(m.user.username, m.content);
+                });
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function sendMessage() {
+            if (!currentUser) return;
+            
+            const message = document.getElementById("messageInput").value;
+            if (!message) return;
+
+            connection.invoke("SendMessage", message, currentUser.userId)
+                .catch(function (err) {
+                    console.error(err.toString());
+                });
+            
+            document.getElementById("messageInput").value = "";
+        }
+
+        // Handle Enter key in message input
+        document.getElementById("messageInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        // Handle Enter key in username input
+        document.getElementById("usernameInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                login();
+            }
+        });
     </script>
 </body>
 </html>
