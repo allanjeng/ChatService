@@ -5,23 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-// Register DbContext with SQLite
+// Add services to the container
 builder.Services.AddDbContext<ChatDbContext>(options =>
     options.UseSqlite("Data Source=chat.db"));
 
-// Add SignalR service
 builder.Services.AddSignalR();
-
-// For minimal API endpoints (if needed)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -32,7 +27,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Apply any pending migrations and create the database (for demo purposes)
+// Apply database migrations
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
@@ -53,7 +48,7 @@ app.MapPost("/api/auth/login", async (HttpRequest request, IAuthService authServ
     return Results.Ok(new { userId = user.Id, username = user.Username });
 });
 
-// Map REST API endpoint to retrieve the last 50 messages
+// Message history endpoint
 app.MapGet("/messages", async (ChatDbContext db) =>
 {
     var messages = await db.Messages
@@ -65,10 +60,10 @@ app.MapGet("/messages", async (ChatDbContext db) =>
     return Results.Ok(messages);
 });
 
-// Map SignalR hub endpoint
+// SignalR hub endpoint
 app.MapHub<ChatHub>("/chathub");
 
-// Map the default route to serve index.html
+// Default route
 app.MapGet("/", async context =>
 {
     context.Response.ContentType = "text/html";
