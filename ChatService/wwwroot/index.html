@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Chat Service Demo</title>
+</head>
+<body>
+    <h1>Chat Service</h1>
+    <ul id="messagesList"></ul>
+    <input type="text" id="messageInput" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <!-- SignalR JavaScript client from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // Build a connection to the SignalR hub
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .build();
+
+        // Function to display a new message in the list
+        function addMessage(user, message) {
+            const li = document.createElement("li");
+            li.textContent = `${user}: ${message}`;
+            document.getElementById("messagesList").appendChild(li);
+        }
+
+        // Listen for incoming messages from the hub
+        connection.on("ReceiveMessage", function (user, message) {
+            addMessage(user, message);
+        });
+
+        // Start the SignalR connection
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        // Send a message via SignalR
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+            // For this demo, we use a hardcoded user name.
+            const user = "User";
+            connection.invoke("SendMessage", user, message).catch(function (err) {
+                return console.error(err.toString());
+            });
+        }
+
+        // Fetch and display the last 50 messages on page load
+        fetch('/messages')
+            .then(response => response.json())
+            .then(messages => {
+                messages.forEach(m => {
+                    // If available, you can also show m.User.Username
+                    addMessage("User", m.content);
+                });
+            })
+            .catch(err => console.error(err));
+    </script>
+</body>
+</html>
