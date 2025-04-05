@@ -1,5 +1,4 @@
 using ChatService.Models;
-using Xunit;
 
 namespace ChatService.Tests;
 
