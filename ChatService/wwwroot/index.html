@@ -130,7 +130,7 @@
 
         async function loadMessages() {
             try {
-                const response = await fetch('/messages');
+                const response = await fetch('/api/messages');
                 const messages = await response.json();
                 messages.forEach(m => {
                     addMessage(m.user.username, m.content);
