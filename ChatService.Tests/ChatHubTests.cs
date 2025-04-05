@@ -3,6 +3,7 @@ using ChatService.Hubs;
 using ChatService.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -13,6 +14,8 @@ public class ChatHubTests
     private readonly DbContextOptions<ChatDbContext> _options;
     private readonly Mock<IHubCallerClients> _mockClients;
     private readonly Mock<IClientProxy> _mockClientProxy;
+    private readonly Mock<ILogger<ChatHub>> _mockLogger;
+    private readonly Mock<HubCallerContext> _mockContext;
     private readonly ChatHub _chatHub;
 
     public ChatHubTests()
@@ -24,9 +27,14 @@ public class ChatHubTests
         var context = new ChatDbContext(_options);
         _mockClients = new Mock<IHubCallerClients>();
         _mockClientProxy = new Mock<IClientProxy>();
-        _chatHub = new ChatHub(context)
+        _mockLogger = new Mock<ILogger<ChatHub>>();
+        _mockContext = new Mock<HubCallerContext>();
+        _mockContext.Setup(c => c.ConnectionId).Returns("test-connection-id");
+
+        _chatHub = new ChatHub(context, _mockLogger.Object)
         {
-            Clients = _mockClients.Object
+            Clients = _mockClients.Object,
+            Context = _mockContext.Object
         };
     }
 
