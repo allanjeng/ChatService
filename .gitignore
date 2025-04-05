@@ -1,0 +1,41 @@
+# Build Folders (you can keep bin if you have scripts that use it)
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Auto generated files
+*.log
+*.vspscc
+*.vssscc
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+
+# NuGet
+*.nupkg
+# NuGet Packages
+packages/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Dotnet runtime files
+*.db
+*.pidb
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
