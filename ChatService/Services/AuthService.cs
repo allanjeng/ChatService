@@ -27,26 +27,19 @@ public interface IAuthService
 /// <summary>
 /// Implementation of the authentication service.
 /// </summary>
-public class AuthService : IAuthService
+public class AuthService(ChatDbContext dbContext) : IAuthService
 {
-    private readonly ChatDbContext _dbContext;
-
-    public AuthService(ChatDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     public async Task<User?> AuthenticateAsync(string username)
     {
-        return await _dbContext.Users
+        return await dbContext.Users
             .FirstOrDefaultAsync(u => u.Username == username);
     }
 
     public async Task<User> RegisterAsync(string username)
     {
         var user = new User { Username = username };
-        _dbContext.Users.Add(user);
-        await _dbContext.SaveChangesAsync();
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync();
         return user;
     }
 } 

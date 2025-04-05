@@ -1,26 +1,14 @@
 using ChatService.Data;
 using ChatService.Models;
 using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace ChatService.Hubs;
 
 /// <summary>
 /// SignalR hub for handling real-time chat functionality.
 /// </summary>
-public class ChatHub : Hub
+public class ChatHub(ChatDbContext dbContext, ILogger<ChatHub> logger) : Hub
 {
-    private readonly ChatDbContext _dbContext;
-    private readonly ILogger<ChatHub> _logger;
-
-    public ChatHub(ChatDbContext dbContext, ILogger<ChatHub> logger)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-    }
 
     /// <summary>
     /// Sends a message to all connected clients.
@@ -32,10 +20,10 @@ public class ChatHub : Hub
     {
         try
         {
-            var user = await _dbContext.Users.FindAsync(userId);
+            var user = await dbContext.Users.FindAsync(userId);
             if (user == null)
             {
-                _logger.LogWarning("User {UserId} not found when attempting to send message", userId);
+                logger.LogWarning("User {UserId} not found when attempting to send message", userId);
                 throw new HubException("User not found");
             }
 
@@ -46,28 +34,28 @@ public class ChatHub : Hub
                 UserId = userId
             };
 
-            _dbContext.Messages.Add(msg);
-            await _dbContext.SaveChangesAsync();
+            dbContext.Messages.Add(msg);
+            await dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Message sent by user {Username}", user.Username);
+            logger.LogInformation("Message sent by user {Username}", user.Username);
             await Clients.All.SendAsync("ReceiveMessage", user.Username, message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending message for user {UserId}", userId);
+            logger.LogError(ex, "Error sending message for user {UserId}", userId);
             throw;
         }
     }
 
     public override async Task OnConnectedAsync()
     {
-        _logger.LogInformation("Client connected: {ConnectionId}", Context.ConnectionId);
+        logger.LogInformation("Client connected: {ConnectionId}", Context.ConnectionId);
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _logger.LogInformation("Client disconnected: {ConnectionId}", Context.ConnectionId);
+        logger.LogInformation("Client disconnected: {ConnectionId}", Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
 }

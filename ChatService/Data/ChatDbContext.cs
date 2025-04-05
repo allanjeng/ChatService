@@ -6,12 +6,8 @@ namespace ChatService.Data;
 /// <summary>
 /// Database context for the chat application.
 /// </summary>
-public class ChatDbContext : DbContext
+public class ChatDbContext(DbContextOptions<ChatDbContext> options) : DbContext(options)
 {
-    public ChatDbContext(DbContextOptions<ChatDbContext> options)
-        : base(options)
-    {
-    }
 
     /// <summary>
     /// Set of users in the system.

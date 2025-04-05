@@ -1,14 +1,42 @@
 using ChatService.Data;
 using ChatService.Hubs;
 using ChatService.Services;
+using ChatService.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure cache settings
+var cacheSettings = builder.Configuration.GetSection("CacheSettings").Get<CacheSettings>();
+var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<Program>();
+
+if (cacheSettings == null)
+{
+    logger.LogWarning("CacheSettings not found in configuration, using default values");
+    cacheSettings = new CacheSettings();
+}
+
+logger.LogInformation("Configuring cache with settings: SizeLimit={SizeLimit}, ExpirationScanFrequency={ExpirationScanFrequency}, MessageCacheDuration={MessageCacheDuration}",
+    cacheSettings.SizeLimit,
+    cacheSettings.ExpirationScanFrequency,
+    cacheSettings.MessageCacheDuration);
 
 // Add services to the container
 builder.Services.AddDbContext<ChatDbContext>(options =>
     options.UseSqlite("Data Source=chat.db"));
+
+// Add memory cache with configuration
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = cacheSettings.SizeLimit;
+    options.ExpirationScanFrequency = cacheSettings.GetExpirationScanFrequency();
+});
+
+// Configure cache settings
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
 
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
