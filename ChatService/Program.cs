@@ -42,8 +42,8 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<MessageGeneratorService>();
-builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<IMessageGeneratorService, MessageGeneratorService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 // Add controllers
 builder.Services.AddControllers();
@@ -68,7 +68,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 
     // Warm up the cache after migrations
-    var messageService = scope.ServiceProvider.GetRequiredService<MessageService>();
+    var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
     await messageService.WarmCacheAsync();
 }
 

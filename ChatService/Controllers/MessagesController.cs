@@ -15,7 +15,7 @@ namespace ChatService.Controllers;
 public class MessagesController : ControllerBase
 {
     private readonly ChatDbContext _dbContext;
-    private readonly MessageGeneratorService _messageGenerator;
+    private readonly IMessageGeneratorService _messageGenerator;
     private readonly IMemoryCache _cache;
     private readonly CacheSettings _cacheSettings;
     private readonly ILogger<MessagesController> _logger;
@@ -24,7 +24,7 @@ public class MessagesController : ControllerBase
 
     public MessagesController(
         ChatDbContext dbContext, 
-        MessageGeneratorService messageGenerator,
+        IMessageGeneratorService messageGenerator,
         IMemoryCache cache,
         IOptions<CacheSettings> cacheSettings,
         ILogger<MessagesController> logger)

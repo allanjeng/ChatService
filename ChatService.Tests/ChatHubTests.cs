@@ -20,7 +20,7 @@ public class ChatHubTests
     private readonly Mock<IClientProxy> _mockAllClientsProxy;
     private readonly Mock<ILogger<ChatHub>> _mockLogger;
     private readonly Mock<HubCallerContext> _mockContext;
-    private readonly Mock<MessageService> _mockMessageService;
+    private readonly Mock<IMessageService> _mockMessageService;
     private readonly ChatHub _chatHub;
 
     public ChatHubTests()
@@ -35,11 +35,8 @@ public class ChatHubTests
         _mockAllClientsProxy = new Mock<IClientProxy>();
         _mockLogger = new Mock<ILogger<ChatHub>>();
         _mockContext = new Mock<HubCallerContext>();
-        _mockMessageService = new Mock<MessageService>(
-            context,
-            Mock.Of<IMemoryCache>(),
-            Mock.Of<ILogger<MessageService>>(),
-            Mock.Of<IConfiguration>());
+        
+        _mockMessageService = new Mock<IMessageService>();
         
         _mockContext.Setup(c => c.ConnectionId).Returns("test-connection-id");
 
@@ -80,6 +77,18 @@ public class ChatHubTests
                 It.Is<object[]>(o => o[0].ToString() == username && o[1].ToString() == message),
                 default),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task SendMessage_EmptyMessage_ThrowsHubException()
+    {
+        // Arrange
+        var userId = 1;
+        var message = "";
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HubException>(() =>
+            _chatHub.SendMessage(message, userId));
     }
 
     [Fact]

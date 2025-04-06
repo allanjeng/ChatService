@@ -5,31 +5,36 @@ namespace ChatService.Data;
 
 /// <summary>
 /// Database context for the chat application.
+/// This context manages the database interactions for users and messages,
+/// including entity relationships and database schema configuration.
 /// </summary>
+/// <param name="options">The options to be used by the DbContext</param>
 public class ChatDbContext(DbContextOptions<ChatDbContext> options) : DbContext(options)
 {
-
     /// <summary>
     /// Set of users in the system.
+    /// Provides access to user-related database operations.
     /// </summary>
     public DbSet<User> Users { get; set; } = null!;
 
     /// <summary>
     /// Set of messages in the system.
+    /// Provides access to message-related database operations.
     /// </summary>
     public DbSet<Message> Messages { get; set; } = null!;
 
-    // Optionally configure the model further
+    /// <summary>
+    /// Configures the model relationships and constraints.
+    /// </summary>
+    /// <param name="modelBuilder">The builder being used to construct the model</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // For example, ensure a required relationship between Message and User
         modelBuilder.Entity<Message>()
             .HasOne(m => m.User)
-            .WithMany() // or .WithMany(u => u.Messages) if you add a collection to User
+            .WithMany()
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
-    
 }

@@ -2,41 +2,42 @@ using ChatService.Data;
 using ChatService.Models;
 using ChatService.Services;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace ChatService.Hubs;
 
 /// <summary>
 /// SignalR hub for handling real-time chat functionality.
+/// This hub manages real-time communication between clients, including message broadcasting,
+/// connection management, and message history retrieval.
 /// </summary>
-public class ChatHub : Hub
+/// <param name="dbContext">The database context for accessing chat data</param>
+/// <param name="logger">Logger instance for tracking hub operations</param>
+/// <param name="messageService">Service for managing message operations</param>
+public class ChatHub(
+    ChatDbContext dbContext,
+    ILogger<ChatHub> logger,
+    IMessageService messageService) : Hub
 {
-    private readonly ChatDbContext _dbContext;
-    private readonly ILogger<ChatHub> _logger;
-    private readonly MessageService _messageService;
     private const int MaxMessageLength = 1000;
-
-    public ChatHub(
-        ChatDbContext dbContext,
-        ILogger<ChatHub> logger,
-        MessageService messageService)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-        _messageService = messageService;
-    }
 
     /// <summary>
     /// Sends a message to all connected clients.
     /// </summary>
-    /// <param name="message">The message content.</param>
-    /// <param name="userId">The ID of the user sending the message.</param>
-    /// <exception cref="HubException">Thrown when the user is not found or message is invalid.</exception>
+    /// <param name="message">The message content to be sent</param>
+    /// <param name="userId">The ID of the user sending the message</param>
+    /// <returns>A task representing the asynchronous operation</returns>
+    /// <exception cref="HubException">
+    /// Thrown when:
+    /// - The message is empty or whitespace
+    /// - The message exceeds maximum length
+    /// - The user is not found
+    /// - An unexpected error occurs
+    /// </exception>
     public async Task SendMessage(string message, int userId)
     {
         try
         {
-            // Validate message
             if (string.IsNullOrWhiteSpace(message))
             {
                 throw new HubException("Message cannot be empty");
@@ -47,10 +48,10 @@ public class ChatHub : Hub
                 throw new HubException($"Message exceeds maximum length of {MaxMessageLength} characters");
             }
 
-            var user = await _dbContext.Users.FindAsync(userId);
+            var user = await dbContext.Users.FindAsync(userId);
             if (user == null)
             {
-                _logger.LogWarning("User {UserId} not found when attempting to send message", userId);
+                logger.LogWarning("User {UserId} not found when attempting to send message", userId);
                 throw new HubException("User not found");
             }
 
@@ -61,10 +62,9 @@ public class ChatHub : Hub
                 UserId = userId
             };
 
-            // Use MessageService to add the message
-            await _messageService.AddMessageAsync(msg);
+            await messageService.AddMessageAsync(msg);
 
-            _logger.LogInformation("Message sent by user {Username}", user.Username);
+            logger.LogInformation("Message sent by user {Username}", user.Username);
             await Clients.All.SendAsync("ReceiveMessage", user.Username, message);
         }
         catch (HubException)
@@ -73,32 +73,41 @@ public class ChatHub : Hub
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending message for user {UserId}", userId);
+            logger.LogError(ex, "Error sending message for user {UserId}", userId);
             throw new HubException("An error occurred while sending the message");
         }
     }
 
+    /// <summary>
+    /// Called when a new client connects to the hub.
+    /// Sends recent messages to the newly connected client.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
     public override async Task OnConnectedAsync()
     {
-        _logger.LogInformation("Client connected: {ConnectionId}", Context.ConnectionId);
+        logger.LogInformation("Client connected: {ConnectionId}", Context.ConnectionId);
         
-        // Send recent messages to the newly connected client
         try
         {
-            var recentMessages = await _messageService.GetRecentMessagesAsync();
+            var recentMessages = await messageService.GetRecentMessagesAsync();
             await Clients.Caller.SendAsync("ReceiveRecentMessages", recentMessages);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending recent messages to client {ConnectionId}", Context.ConnectionId);
+            logger.LogError(ex, "Error sending recent messages to client {ConnectionId}", Context.ConnectionId);
         }
 
         await base.OnConnectedAsync();
     }
 
+    /// <summary>
+    /// Called when a client disconnects from the hub.
+    /// </summary>
+    /// <param name="exception">The exception that caused the disconnect, if any</param>
+    /// <returns>A task representing the asynchronous operation</returns>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _logger.LogInformation("Client disconnected: {ConnectionId}", Context.ConnectionId);
+        logger.LogInformation("Client disconnected: {ConnectionId}", Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
 }
