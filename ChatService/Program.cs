@@ -43,6 +43,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<MessageGeneratorService>();
+builder.Services.AddScoped<MessageService>();
 
 // Add controllers
 builder.Services.AddControllers();
@@ -65,6 +66,10 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
     db.Database.Migrate();
+
+    // Warm up the cache after migrations
+    var messageService = scope.ServiceProvider.GetRequiredService<MessageService>();
+    await messageService.WarmCacheAsync();
 }
 
 // Map controllers

@@ -74,14 +74,35 @@
         function initializeConnection() {
             connection = new signalR.HubConnectionBuilder()
                 .withUrl("/chathub")
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 20000]) // Retry with increasing delays
                 .build();
 
             connection.on("ReceiveMessage", function (username, message) {
                 addMessage(username, message);
             });
 
+            connection.onreconnecting((error) => {
+                console.log('Connection lost. Reconnecting...', error);
+            });
+
+            connection.onreconnected((connectionId) => {
+                console.log('Connection reestablished. Connection ID:', connectionId);
+                // Reload messages after reconnection
+                loadMessages();
+            });
+
+            connection.onclose((error) => {
+                console.log('Connection closed. Error:', error);
+                // Attempt to reconnect after a delay
+                setTimeout(() => {
+                    connection.start().catch(err => {
+                        console.error('Failed to reconnect:', err);
+                    });
+                }, 5000);
+            });
+
             connection.start().catch(function (err) {
-                console.error(err.toString());
+                console.error('Error starting connection:', err);
             });
         }
 
