@@ -42,7 +42,8 @@ public class MessageService(
 
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetAbsoluteExpiration(_cacheDuration)
-                .SetPriority(CacheItemPriority.High);
+                .SetPriority(CacheItemPriority.High)
+                .SetSize(1); // Each message list counts as 1 unit in the cache
 
             cache.Set(RecentMessagesCacheKey, messages, cacheOptions);
             logger.LogInformation("Cached {Count} messages for {Duration} minutes", 
