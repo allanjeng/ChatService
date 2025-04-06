@@ -61,13 +61,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Apply database migrations
+// Apply database migrations and warm up cache
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
     db.Database.Migrate();
 
-    // Warm up the cache after migrations
     var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
     await messageService.WarmCacheAsync();
 }

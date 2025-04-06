@@ -12,15 +12,11 @@ public interface IAuthService
     /// <summary>
     /// Authenticates a user by their username.
     /// </summary>
-    /// <param name="username">The username to authenticate.</param>
-    /// <returns>The authenticated user, or null if not found.</returns>
     Task<User?> AuthenticateAsync(string username);
 
     /// <summary>
     /// Registers a new user with the given username.
     /// </summary>
-    /// <param name="username">The username for the new user.</param>
-    /// <returns>The newly created user.</returns>
     Task<User> RegisterAsync(string username);
 }
 

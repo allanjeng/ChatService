@@ -8,13 +8,7 @@ namespace ChatService.Services;
 
 /// <summary>
 /// Service for handling message operations including retrieval and caching.
-/// This service manages the lifecycle of chat messages, including storage,
-/// retrieval, and caching operations.
 /// </summary>
-/// <param name="dbContext">The database context for message persistence</param>
-/// <param name="cache">The memory cache for temporary message storage</param>
-/// <param name="logger">Logger instance for tracking service operations</param>
-/// <param name="configuration">Application configuration for cache settings</param>
 public class MessageService(
     ChatDbContext dbContext,
     IMemoryCache cache,
@@ -28,12 +22,7 @@ public class MessageService(
 
     /// <summary>
     /// Retrieves the most recent messages, up to the specified limit.
-    /// Messages are first attempted to be retrieved from cache, falling back to
-    /// database retrieval if not found in cache.
     /// </summary>
-    /// <param name="limit">Maximum number of messages to retrieve (default: 50)</param>
-    /// <returns>A list of recent messages with user information</returns>
-    /// <exception cref="Exception">Thrown when there's an error retrieving messages</exception>
     public async Task<List<Message>> GetRecentMessagesAsync(int limit = DefaultMessageLimit)
     {
         try
@@ -71,9 +60,6 @@ public class MessageService(
     /// <summary>
     /// Adds a new message to the system and invalidates the cache.
     /// </summary>
-    /// <param name="message">The message to add to the system</param>
-    /// <returns>The added message with updated ID</returns>
-    /// <exception cref="Exception">Thrown when there's an error adding the message</exception>
     public async Task<Message> AddMessageAsync(Message message)
     {
         try
@@ -95,8 +81,6 @@ public class MessageService(
 
     /// <summary>
     /// Warms up the cache by preloading recent messages.
-    /// This method is typically called during application startup to improve
-    /// initial response times for new connections.
     /// </summary>
     public async Task WarmCacheAsync()
     {
