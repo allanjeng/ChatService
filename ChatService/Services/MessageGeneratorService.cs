@@ -5,7 +5,7 @@ namespace ChatService.Services;
 /// <summary>
 /// Service for generating sample messages for testing and development purposes.
 /// </summary>
-public class MessageGeneratorService
+public class MessageGeneratorService : IMessageGeneratorService
 {
     /// <summary>
     /// Generates a specified number of sample messages with sequential numbering and current timestamps.

@@ -9,7 +9,7 @@ namespace ChatService.Services;
 /// <summary>
 /// Service for handling message operations including retrieval and caching.
 /// </summary>
-public class MessageService
+public class MessageService : IMessageService
 {
     private const string RecentMessagesCacheKey = "recent_messages";
     private const int DefaultMessageLimit = 50;
