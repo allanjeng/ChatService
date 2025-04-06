@@ -1,6 +1,6 @@
 using ChatService.Models;
 
-namespace ChatService.Tests;
+namespace ChatService.Tests.Models;
 
 public class ModelsTests
 {

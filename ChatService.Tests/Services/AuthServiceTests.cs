@@ -1,11 +1,12 @@
 using ChatService.Data;
 using ChatService.Models;
 using ChatService.Services;
+using ChatService.Tests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 
-namespace ChatService.Tests;
+namespace ChatService.Tests.Services;
 
 public class AuthServiceTests
 {
@@ -15,10 +16,7 @@ public class AuthServiceTests
 
     public AuthServiceTests()
     {
-        _options = new DbContextOptionsBuilder<ChatDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb_" + Guid.NewGuid().ToString())
-            .Options;
-
+        _options = TestHelper.CreateInMemoryDbContextOptions();
         var context = new ChatDbContext(_options);
         _mockUsersSet = new Mock<DbSet<User>>();
         _authService = new AuthService(context);
@@ -29,17 +27,14 @@ public class AuthServiceTests
     {
         // Arrange
         using var context = new ChatDbContext(_options);
-        var username = "testuser";
-        var user = new User { Username = username };
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        var user = await TestHelper.CreateTestUserAsync(context);
 
         // Act
-        var result = await _authService.AuthenticateAsync(username);
+        var result = await _authService.AuthenticateAsync(user.Username);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(username, result.Username);
+        Assert.Equal(user.Username, result.Username);
     }
 
     [Fact]

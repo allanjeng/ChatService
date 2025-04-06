@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace ChatService.Tests;
+namespace ChatService.Tests.Hubs;
 
 public class ChatHubTests
 {

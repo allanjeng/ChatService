@@ -1,6 +1,7 @@
 using ChatService.Data;
 using ChatService.Models;
 using ChatService.Services;
+using ChatService.Tests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace ChatService.Tests;
+namespace ChatService.Tests.Services;
 
 public class MessageServiceTests
 {
@@ -20,25 +21,12 @@ public class MessageServiceTests
 
     public MessageServiceTests()
     {
-        _options = new DbContextOptionsBuilder<ChatDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb_" + Guid.NewGuid().ToString())
-            .Options;
-
+        _options = TestHelper.CreateInMemoryDbContextOptions();
         var context = new ChatDbContext(_options);
-        _mockCache = new Mock<IMemoryCache>();
-        _mockLogger = new Mock<ILogger<MessageService>>();
-        _mockConfiguration = new Mock<IConfiguration>();
+        _mockCache = TestHelper.CreateMockMemoryCache();
+        _mockLogger = TestHelper.CreateMockLogger<MessageService>();
+        _mockConfiguration = TestHelper.CreateMockConfiguration();
         
-        var mockConfigSection = new Mock<IConfigurationSection>();
-        mockConfigSection.Setup(x => x.Value).Returns("5");
-        _mockConfiguration.Setup(x => x.GetSection("CacheSettings:MessageCacheDuration"))
-            .Returns(mockConfigSection.Object);
-
-        // Setup cache mock
-        var cacheEntry = new Mock<ICacheEntry>();
-        _mockCache.Setup(x => x.CreateEntry(It.IsAny<object>()))
-            .Returns(cacheEntry.Object);
-
         _messageService = new MessageService(
             context,
             _mockCache.Object,
@@ -51,17 +39,8 @@ public class MessageServiceTests
     {
         // Arrange
         using var context = new ChatDbContext(_options);
-        var user = new User { Username = "testuser" };
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
-
-        var messages = new List<Message>
-        {
-            new() { Content = "Message 1", UserId = user.Id },
-            new() { Content = "Message 2", UserId = user.Id }
-        };
-        context.Messages.AddRange(messages);
-        await context.SaveChangesAsync();
+        var user = await TestHelper.CreateTestUserAsync(context);
+        var messages = await TestHelper.CreateTestMessagesAsync(context, user);
 
         _mockCache.Setup(c => c.TryGetValue(It.IsAny<string>(), out It.Ref<object>.IsAny))
             .Returns(false);
@@ -103,9 +82,7 @@ public class MessageServiceTests
     {
         // Arrange
         using var context = new ChatDbContext(_options);
-        var user = new User { Username = "testuser" };
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        var user = await TestHelper.CreateTestUserAsync(context);
 
         var message = new Message
         {
