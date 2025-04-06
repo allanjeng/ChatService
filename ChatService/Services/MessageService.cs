@@ -2,7 +2,6 @@ using ChatService.Data;
 using ChatService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 namespace ChatService.Services;
 
@@ -46,7 +45,7 @@ public class MessageService(
                 .SetSize(1); // Each message list counts as 1 unit in the cache
 
             cache.Set(RecentMessagesCacheKey, messages, cacheOptions);
-            logger.LogInformation("Cached {Count} messages for {Duration} minutes", 
+            logger.LogInformation("Cached {Count} messages for {Duration} minutes",
                 messages.Count, _cacheDuration.TotalMinutes);
 
             return messages;
@@ -96,4 +95,4 @@ public class MessageService(
             logger.LogError(ex, "Error during cache warm-up");
         }
     }
-} 
+}

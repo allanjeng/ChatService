@@ -38,4 +38,4 @@ public class AuthService(ChatDbContext dbContext) : IAuthService
         await dbContext.SaveChangesAsync();
         return user;
     }
-} 
+}

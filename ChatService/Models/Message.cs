@@ -1,5 +1,3 @@
-using System;
-
 namespace ChatService.Models;
 
 /// <summary>
@@ -32,7 +30,7 @@ public class Message
     /// This field is automatically set to the current UTC time when the message is created.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    
+
     /// <summary>
     /// Navigation property to the user who sent the message.
     /// This property enables lazy loading of the associated user data.

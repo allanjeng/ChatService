@@ -2,7 +2,6 @@ using ChatService.Data;
 using ChatService.Models;
 using ChatService.Services;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 
 namespace ChatService.Hubs;
 
@@ -86,7 +85,7 @@ public class ChatHub(
     public override async Task OnConnectedAsync()
     {
         logger.LogInformation("Client connected: {ConnectionId}", Context.ConnectionId);
-        
+
         try
         {
             var recentMessages = await messageService.GetRecentMessagesAsync();

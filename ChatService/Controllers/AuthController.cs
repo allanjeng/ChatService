@@ -17,7 +17,7 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
         {
             using var reader = new StreamReader(Request.Body);
             var username = await reader.ReadToEndAsync();
-            
+
             if (string.IsNullOrWhiteSpace(username))
             {
                 logger.LogWarning("Login attempt with empty username");
@@ -34,7 +34,7 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
             {
                 logger.LogInformation("User authenticated: {Username}", username);
             }
-            
+
             return Ok(new { userId = user.Id, username = user.Username });
         }
         catch (Exception ex)
@@ -46,4 +46,4 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
             );
         }
     }
-} 
+}

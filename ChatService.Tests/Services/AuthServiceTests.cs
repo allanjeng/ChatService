@@ -4,7 +4,6 @@ using ChatService.Services;
 using ChatService.Tests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Xunit;
 
 namespace ChatService.Tests.Services;
 
@@ -64,9 +63,9 @@ public class AuthServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(username, result.Username);
-        
+
         var savedUser = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
         Assert.NotNull(savedUser);
         Assert.Equal(username, savedUser.Username);
     }
-} 
+}

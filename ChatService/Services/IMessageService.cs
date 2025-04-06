@@ -25,4 +25,4 @@ public interface IMessageService
     /// Warms up the cache by preloading recent messages.
     /// </summary>
     Task WarmCacheAsync();
-} 
+}

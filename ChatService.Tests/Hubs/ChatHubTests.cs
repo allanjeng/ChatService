@@ -4,11 +4,8 @@ using ChatService.Models;
 using ChatService.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace ChatService.Tests.Hubs;
 
@@ -35,9 +32,9 @@ public class ChatHubTests
         _mockAllClientsProxy = new Mock<IClientProxy>();
         _mockLogger = new Mock<ILogger<ChatHub>>();
         _mockContext = new Mock<HubCallerContext>();
-        
+
         _mockMessageService = new Mock<IMessageService>();
-        
+
         _mockContext.Setup(c => c.ConnectionId).Returns("test-connection-id");
 
         _chatHub = new ChatHub(context, _mockLogger.Object, _mockMessageService.Object)
@@ -67,9 +64,9 @@ public class ChatHubTests
 
         // Assert
         _mockMessageService.Verify(m => m.AddMessageAsync(
-            It.Is<Message>(msg => 
-                msg.Content == message && 
-                msg.UserId == user.Id)), 
+            It.Is<Message>(msg =>
+                msg.Content == message &&
+                msg.UserId == user.Id)),
             Times.Once);
 
         _mockAllClientsProxy.Verify(
@@ -133,4 +130,4 @@ public class ChatHubTests
         // Assert
         // No specific assertions needed as we're just verifying the base implementation is called
     }
-} 
+}

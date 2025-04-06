@@ -61,4 +61,4 @@ public class ModelsTests
         Assert.True(message.Timestamp <= DateTime.UtcNow);
         Assert.True(message.Timestamp >= DateTime.UtcNow.AddSeconds(-1));
     }
-} 
+}

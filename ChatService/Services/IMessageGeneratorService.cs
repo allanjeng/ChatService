@@ -14,4 +14,4 @@ public interface IMessageGeneratorService
     /// <param name="userId">Optional user ID to associate with the messages</param>
     /// <returns>List of generated messages</returns>
     List<Message> GenerateMessages(int count = 50, int userId = 1);
-} 
+}

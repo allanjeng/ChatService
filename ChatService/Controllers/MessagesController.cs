@@ -1,12 +1,11 @@
-using ChatService.Data;
-using ChatService.Services;
-using ChatService.Models;
 using ChatService.Configuration;
+using ChatService.Data;
+using ChatService.Models;
+using ChatService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
 
 namespace ChatService.Controllers;
 
@@ -23,7 +22,7 @@ public class MessagesController : ControllerBase
     private const int MaxRecentMessages = 50;
 
     public MessagesController(
-        ChatDbContext dbContext, 
+        ChatDbContext dbContext,
         IMessageGeneratorService messageGenerator,
         IMemoryCache cache,
         IOptions<CacheSettings> cacheSettings,
@@ -101,4 +100,4 @@ public class MessagesController : ControllerBase
             return Problem($"An error occurred while generating messages: {ex.Message}");
         }
     }
-} 
+}

@@ -9,4 +9,4 @@ public class LoginRequest
     /// The username to authenticate with.
     /// </summary>
     public required string Username { get; set; }
-} 
+}

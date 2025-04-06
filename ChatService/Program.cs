@@ -2,7 +2,6 @@ using ChatService.Data;
 using ChatService.Hubs;
 using ChatService.Services;
 using ChatService.Configuration;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;

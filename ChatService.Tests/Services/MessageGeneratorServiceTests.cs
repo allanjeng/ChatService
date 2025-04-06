@@ -7,7 +7,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace ChatService.Tests.Services;
 
@@ -26,7 +25,7 @@ public class MessageServiceTests
         _mockCache = TestHelper.CreateMockMemoryCache();
         _mockLogger = TestHelper.CreateMockLogger<MessageService>();
         _mockConfiguration = TestHelper.CreateMockConfiguration();
-        
+
         _messageService = new MessageService(
             context,
             _mockCache.Object,
@@ -115,4 +114,4 @@ public class MessageServiceTests
         await _messageService.WarmCacheAsync();
         // No exception means success
     }
-} 
+}

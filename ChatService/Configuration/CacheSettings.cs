@@ -9,4 +9,4 @@ public class CacheSettings
 
     public TimeSpan GetExpirationScanFrequency() => TimeSpan.Parse(ExpirationScanFrequency);
     public TimeSpan GetMessageCacheDuration() => TimeSpan.Parse(MessageCacheDuration);
-} 
+}
